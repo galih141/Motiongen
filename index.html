@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logo motion prompt builder</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  --ink:#0A0B10;
+  --panel:#14161F;
+  --panel-2:#1B1E29;
+  --line:#262A35;
+  --fog:#8A8F9C;
+  --text:#ECEBF0;
+  --signal:#7C5CFF;
+  --signal-dim:#4A3F8C;
+  --pulse:#34E2C0;
+  --warn:#FF8A65;
+}
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  background:var(--ink);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  padding:0;
+}
+
+.wrap{
+  max-width:1180px;
+  margin:0 auto;
+  padding:40px 28px 80px;
+}
+
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:24px;
+  border-bottom:1px solid var(--line);
+  padding-bottom:24px;
+  margin-bottom:32px;
+  flex-wrap:wrap;
+}
+
+.eyebrow{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:var(--pulse);
+  margin:0 0 8px;
+}
+
+h1{
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:600;
+  font-size:32px;
+  margin:0;
+  letter-spacing:-0.01em;
+}
+
+.sub{
+  color:var(--fog);
+  font-size:14px;
+  max-width:420px;
+  margin:0;
+  line-height:1.5;
+}
+
+.stage{
+  width:180px;
+  height:120px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:10px;
+  position:relative;
+  overflow:hidden;
+  flex-shrink:0;
+}
+
+.stage-label{
+  position:absolute;
+  bottom:6px;
+  left:8px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;
+  color:var(--fog);
+  letter-spacing:0.05em;
+  text-transform:uppercase;
+  z-index:2;
+}
+
+#previewMark{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.layout{
+  display:grid;
+  grid-template-columns:1fr 400px;
+  gap:28px;
+  align-items:flex-start;
+}
+
+@media (max-width:880px){
+  .layout{grid-template-columns:1fr;}
+}
+
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:20px 22px;
+  margin-bottom:16px;
+}
+
+.card-title{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:13px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  color:var(--fog);
+  margin:0 0 14px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.card-title .n{
+  font-family:'IBM Plex Mono',monospace;
+  color:var(--signal);
+  font-size:11px;
+}
+
+.field{margin-bottom:14px;}
+.field:last-child{margin-bottom:0;}
+
+.field label{
+  display:block;
+  font-size:13px;
+  color:var(--fog);
+  margin-bottom:6px;
+}
+
+select, input[type="text"], textarea{
+  width:100%;
+  background:var(--panel-2);
+  border:1px solid var(--line);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  padding:10px 12px;
+  border-radius:6px;
+  outline:none;
+}
+
+select:focus, input[type="text"]:focus, textarea:focus{
+  border-color:var(--signal);
+}
+
+textarea{
+  resize:vertical;
+  min-height:60px;
+  line-height:1.5;
+}
+
+.row2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.chip-group{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.chip{
+  font-size:13px;
+  padding:7px 12px;
+  border-radius:20px;
+  border:1px solid var(--line);
+  background:var(--panel-2);
+  color:var(--fog);
+  cursor:pointer;
+  user-select:none;
+  transition:border-color 0.15s, color 0.15s;
+}
+
+.chip:hover{border-color:var(--signal-dim);}
+
+.chip.active{
+  border-color:var(--signal);
+  color:var(--text);
+  background:rgba(124,92,255,0.14);
+}
+
+.sticky{
+  position:sticky;
+  top:20px;
+}
+
+.output-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:12px;
+}
+
+.output-title{
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:600;
+  font-size:15px;
+  margin:0;
+}
+
+.btn{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  background:var(--signal);
+  color:#0A0B10;
+  border:none;
+  padding:9px 14px;
+  border-radius:6px;
+  cursor:pointer;
+  font-weight:500;
+}
+
+.btn:hover{background:#8E72FF;}
+
+.btn.ghost{
+  background:transparent;
+  color:var(--fog);
+  border:1px solid var(--line);
+}
+
+.btn.ghost:hover{color:var(--text);border-color:var(--signal-dim);}
+
+.btn-row{display:flex;gap:8px;}
+
+pre#promptOut{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12.5px;
+  line-height:1.7;
+  color:var(--text);
+  background:var(--panel-2);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:16px 18px;
+  white-space:pre-wrap;
+  word-break:break-word;
+  margin:0 0 14px;
+  max-height:420px;
+  overflow-y:auto;
+}
+
+.shotlist{
+  border-top:1px solid var(--line);
+  padding-top:14px;
+  margin-top:4px;
+}
+
+.shot{
+  display:grid;
+  grid-template-columns:60px 1fr;
+  gap:10px;
+  font-size:12.5px;
+  margin-bottom:8px;
+  align-items:baseline;
+}
+
+.shot .t{
+  font-family:'IBM Plex Mono',monospace;
+  color:var(--pulse);
+}
+
+.shot .d{color:var(--fog);}
+
+.copied-msg{
+  font-size:11px;
+  color:var(--pulse);
+  font-family:'IBM Plex Mono',monospace;
+  margin-left:8px;
+}
+
+.mode-switch{
+  display:flex;
+  border:1px solid var(--line);
+  border-radius:8px;
+  overflow:hidden;
+  margin-bottom:28px;
+}
+
+.mode-opt{
+  flex:1;
+  padding:14px 16px;
+  cursor:pointer;
+  background:var(--panel);
+  border-right:1px solid var(--line);
+  transition:background 0.15s;
+}
+
+.mode-opt:last-child{border-right:none;}
+
+.mode-opt:hover{background:var(--panel-2);}
+
+.mode-opt.active{
+  background:rgba(124,92,255,0.12);
+}
+
+.mode-opt .mt{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:14px;
+  font-weight:600;
+  margin:0 0 4px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.mode-opt.active .mt{color:var(--signal);}
+
+.mode-opt .md{
+  font-size:12.5px;
+  color:var(--fog);
+  margin:0;
+  line-height:1.4;
+}
+
+.dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  border:1.5px solid var(--fog);
+  flex-shrink:0;
+}
+
+.mode-opt.active .dot{
+  background:var(--signal);
+  border-color:var(--signal);
+}
+
+.skip-note{
+  font-size:12.5px;
+  color:var(--fog);
+  font-style:italic;
+  margin:0;
+}
+
+.custom-input{
+  display:none;
+  margin-top:10px;
+}
+
+.select-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.chip.custom-chip{
+  border-style:dashed;
+}
+
+footer{
+  margin-top:20px;
+  font-size:12px;
+  color:var(--fog);
+  line-height:1.6;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="mode-switch" id="modeSwitch">
+  <div class="mode-opt active" data-mode="have">
+    <p class="mt"><span class="dot"></span>I already have a logo</p>
+    <p class="md">You'll attach the logo image directly in your video tool. This just builds the motion prompt to paste alongside it.</p>
+  </div>
+  <div class="mode-opt" data-mode="describe">
+    <p class="mt"><span class="dot"></span>I need to describe a logo</p>
+    <p class="md">No image on hand — the prompt will also describe the logo's shape, type, and style in words.</p>
+  </div>
+</div>
+
+<header>
+  <div>
+    <p class="eyebrow">Motion logo // spec sheet</p>
+    <h1>Logo motion prompt builder</h1>
+    <p class="sub">Pick the parameters below. The right panel assembles a ready-to-paste prompt for whichever AI video/animation tool you're using.</p>
+  </div>
+  <div class="stage">
+    <div id="previewMark"></div>
+    <div class="stage-label">live preview</div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <div class="left">
+
+    <div class="card">
+      <p class="card-title"><span class="n">01</span> your logo</p>
+      <div class="field">
+        <label for="brandName">Brand name</label>
+        <input type="text" id="brandName" placeholder="Acme Studio">
+      </div>
+      <div class="field" id="logoDescField">
+        <label id="logoDescLabel" for="logoDesc">Anything to preserve or call out (optional)</label>
+        <textarea id="logoDesc" placeholder="e.g. keep the fox-head icon sharp and untouched, only the wordmark should move"></textarea>
+      </div>
+      <div class="field">
+        <label for="brandColor">Primary brand color (optional)</label>
+        <input type="text" id="brandColor" placeholder="#1B2A4A or 'deep navy'">
+      </div>
+    </div>
+
+    <div class="card" id="logoTypeCard">
+      <p class="card-title"><span class="n">02</span> logo type</p>
+      <div class="chip-group" data-group="logoType" data-default="Combination mark (icon + wordmark)">
+        <div class="chip" data-value="Wordmark only">Wordmark</div>
+        <div class="chip" data-value="Lettermark / monogram">Lettermark</div>
+        <div class="chip" data-value="Pictorial icon">Icon</div>
+        <div class="chip" data-value="Abstract mark">Abstract mark</div>
+        <div class="chip" data-value="Emblem / badge">Emblem</div>
+        <div class="chip" data-value="Mascot">Mascot</div>
+        <div class="chip active" data-value="Combination mark (icon + wordmark)">Icon + wordmark</div>
+      </div>
+    </div>
+
+    <div class="card" id="styleEraCard">
+      <p class="card-title"><span class="n">03</span> style era</p>
+      <div class="chip-group" data-group="styleEra" data-default="Modern minimal">
+        <div class="chip" data-value="Classic / traditional">Classic</div>
+        <div class="chip active" data-value="Modern minimal">Modern</div>
+        <div class="chip" data-value="Line / outline">Line</div>
+        <div class="chip" data-value="Geometric">Geometric</div>
+        <div class="chip" data-value="Hand-drawn / organic">Hand-drawn</div>
+        <div class="chip" data-value="Tech / digital">Tech</div>
+        <div class="chip" data-value="Luxury / editorial">Luxury</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title"><span class="n">04</span> dimension</p>
+      <div class="chip-group" data-group="dimension" data-default="2D flat">
+        <div class="chip active" data-value="2D flat">2D flat</div>
+        <div class="chip" data-value="2.5D with depth and soft shadow">2.5D</div>
+        <div class="chip" data-value="Full 3D rendered">Full 3D</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title"><span class="n">05</span> motion genre</p>
+      <div class="chip-group" data-group="genre" data-default="fade">
+        <div class="chip active" data-value="fade">Simple / fade</div>
+        <div class="chip" data-value="liquid">Liquid / fluid</div>
+        <div class="chip" data-value="mecha">Mecha / mechanical</div>
+        <div class="chip" data-value="line">Line-draw / stroke</div>
+        <div class="chip" data-value="particle">Particle / dust</div>
+        <div class="chip" data-value="origami">Origami / paper-fold</div>
+        <div class="chip" data-value="glass">Glass / crystal</div>
+        <div class="chip" data-value="glitch">Glitch / digital</div>
+        <div class="chip" data-value="organic">Organic / growth</div>
+        <div class="chip" data-value="kinetic">Kinetic typography</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title"><span class="n">06</span> reveal action</p>
+      <div class="field">
+        <select id="revealType"></select>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title"><span class="n">07</span> easing & feel</p>
+      <div class="chip-group" data-group="easing" data-default="Smooth ease-out">
+        <div class="chip active" data-value="Smooth ease-out">Ease-out</div>
+        <div class="chip" data-value="Elastic / bouncy">Elastic</div>
+        <div class="chip" data-value="Linear / mechanical">Linear</div>
+        <div class="chip" data-value="Snappy overshoot-and-settle">Overshoot</div>
+        <div class="chip" data-value="Slow cinematic">Cinematic</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title"><span class="n">08</span> lighting & background</p>
+      <div class="row2">
+        <div class="field">
+          <label for="lighting">Lighting</label>
+          <select id="lighting">
+            <option>Soft studio light</option>
+            <option>Neon glow</option>
+            <option>Harsh directional / specular</option>
+            <option>Backlit rim light</option>
+            <option>Flat ambient</option>
+            <option>Volumetric light rays</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="background">Background</label>
+          <select id="background">
+            <option>Solid dark background</option>
+            <option>Solid light background</option>
+            <option>Subtle gradient</option>
+            <option>Transparent / alpha channel</option>
+            <option>Studio environment</option>
+            <option>Abstract atmospheric scene</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title"><span class="n">09</span> camera</p>
+      <div class="chip-group" data-group="camera" data-default="Static, locked-off">
+        <div class="chip active" data-value="Static, locked-off">Static</div>
+        <div class="chip" data-value="Slow push-in">Push-in</div>
+        <div class="chip" data-value="Orbit around the mark">Orbit</div>
+        <div class="chip" data-value="Gentle pan">Pan</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title"><span class="n">10</span> timing & format</p>
+      <div class="row2">
+        <div class="field">
+          <label for="duration">Duration</label>
+          <select id="duration">
+            <option value="2">2 seconds</option>
+            <option value="3" selected>3 seconds</option>
+            <option value="5">5 seconds</option>
+            <option value="8">8 seconds</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="aspect">Aspect ratio</label>
+          <select id="aspect">
+            <option value="16:9">16:9 — widescreen</option>
+            <option value="1:1">1:1 — square</option>
+            <option value="9:16">9:16 — vertical / reels</option>
+            <option value="4:5">4:5 — social post</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="loop">End behavior</label>
+        <select id="loop">
+          <option>Hold on a static final frame</option>
+          <option>Loop seamlessly</option>
+          <option>Fade to transparent / end card</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title"><span class="n">11</span> reference anchor (optional)</p>
+      <div class="field">
+        <input type="text" id="reference" placeholder="e.g. 'like an Apple product reveal' or 'Pixar logo intro'">
+      </div>
+    </div>
+
+  </div>
+
+  <div class="right sticky">
+    <div class="card">
+      <div class="output-head">
+        <p class="output-title">Generated prompt</p>
+        <div class="btn-row">
+          <button class="btn ghost" id="randomizeBtn">Randomize</button>
+          <button class="btn" id="copyBtn">Copy</button>
+        </div>
+      </div>
+      <pre id="promptOut"></pre>
+      <div class="shotlist" id="shotlist"></div>
+    </div>
+    <footer>Parameters regenerate the prompt live. Paste it into your motion tool of choice — adjust wording to match that tool's syntax (some prefer comma-separated tags, others full sentences).</footer>
+  </div>
+
+</div>
+</div>
+
+<script>
+const revealOptions = {
+  fade: ["Fade in from nothing","Circular iris reveal opening outward","Mask wipe left to right","Scale up from a single point"],
+  liquid: ["Liquid droplets merge into the final form","Viscous fluid pours and settles into shape","Ferrofluid spikes pull inward and flatten into the mark"],
+  mecha: ["Mechanical panels slide and interlock into place","Segmented plates snap together with a hydraulic motion","Modular parts extend and lock via servo-driven motion"],
+  line: ["A single continuous stroke traces the full outline, then fills","Neon tube lights up along the contour path","Wireframe outline resolves into a solid fill"],
+  particle: ["Swirling particles converge and snap into position","Embers coalesce out of drifting smoke","Fragments are pulled together as if magnetized"],
+  origami: ["Folded paper unfurls panel by panel into the mark","Geometric creases fold sequentially into final form"],
+  glass: ["Refractive glass shards fly in and assemble with a light flash","Crystalline facets grow outward from the center"],
+  glitch: ["RGB channels split and snap into alignment","Scan-line static resolves into a stable image","Signal locks on through a brief digital flicker"],
+  organic: ["The mark blooms outward like a growing plant","Ink bleeds and spreads into the final shape","Cellular growth pattern expands into the logo form"],
+  kinetic: ["Letters type on one at a time with staggered timing","Each character rotates into place in sequence","Wordmark builds via a per-letter mask wipe"]
+};
+
+const genreLabels = {
+  fade:"simple, minimal reveal", liquid:"liquid / fluid", mecha:"mecha / mechanical",
+  line:"line-draw / stroke", particle:"particle / dust", origami:"origami / paper-fold",
+  glass:"glass / crystal", glitch:"glitch / digital", organic:"organic growth", kinetic:"kinetic typography"
+};
+
+const state = { mode:"have", logoType:"Combination mark (icon + wordmark)", styleEra:"Modern minimal", dimension:"2D flat", genre:"fade", easing:"Smooth ease-out", camera:"Static, locked-off" };
+
+document.getElementById("modeSwitch").addEventListener("click", e=>{
+  const opt = e.target.closest(".mode-opt");
+  if(!opt) return;
+  document.querySelectorAll(".mode-opt").forEach(o=>o.classList.remove("active"));
+  opt.classList.add("active");
+  state.mode = opt.dataset.mode;
+  applyMode();
+  generate();
+});
+
+function applyMode(){
+  const typeCard = document.getElementById("logoTypeCard");
+  const eraCard = document.getElementById("styleEraCard");
+  const descLabel = document.getElementById("logoDescLabel");
+  const descArea = document.getElementById("logoDesc");
+  if(state.mode==="have"){
+    typeCard.style.display = "none";
+    eraCard.style.display = "none";
+    descLabel.textContent = "Anything to preserve or call out (optional)";
+    descArea.placeholder = "e.g. keep the fox-head icon sharp and untouched, only the wordmark should move";
+  } else {
+    typeCard.style.display = "";
+    eraCard.style.display = "";
+    descLabel.textContent = "Describe the logo (shape, symbol, colors, text)";
+    descArea.placeholder = "A minimal fox-head icon made of angular facets, deep navy and white, with the wordmark 'ACME' in a geometric sans-serif below it.";
+  }
+}
+
+function setupCustomChips(){
+  document.querySelectorAll(".chip-group").forEach(group=>{
+    const key = group.dataset.group;
+    if(group.querySelector(".custom-chip")) return;
+    const chip = document.createElement("div");
+    chip.className = "chip custom-chip";
+    chip.dataset.value = "__custom__";
+    chip.textContent = "Custom…";
+    group.appendChild(chip);
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "custom-input";
+    input.dataset.for = key;
+    input.placeholder = "Type your own — e.g. " + customPlaceholders[key];
+    group.insertAdjacentElement("afterend", input);
+    input.addEventListener("input", ()=>{
+      state[key] = input.value.trim() || "custom";
+      generate();
+      renderPreview();
+    });
+  });
+}
+
+function setupCustomSelects(){
+  ["revealType","lighting","background","aspect","loop","duration"].forEach(id=>{
+    const sel = document.getElementById(id);
+    if(!sel || sel.dataset.customReady) return;
+    sel.dataset.customReady = "1";
+    const opt = document.createElement("option");
+    opt.value = "__custom__";
+    opt.textContent = "Custom…";
+    sel.appendChild(opt);
+    const wrap = document.createElement("div");
+    wrap.className = "custom-input";
+    wrap.style.marginTop = "8px";
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "Type your own for this field";
+    input.dataset.for = id;
+    wrap.appendChild(input);
+    sel.insertAdjacentElement("afterend", wrap);
+    sel.addEventListener("change", ()=>{
+      wrap.style.display = sel.value === "__custom__" ? "block" : "none";
+      generate();
+    });
+    input.addEventListener("input", generate);
+  });
+}
+
+const customPlaceholders = {
+  logoType:"'sticker-style badge'",
+  styleEra:"'brutalist / raw'",
+  dimension:"'stop-motion clay'",
+  genre:"'ink-splash reveal'",
+  easing:"'staggered pulse'",
+  camera:"'handheld shake-in'"
+};
+
+document.querySelectorAll(".chip-group").forEach(group=>{
+  const key = group.dataset.group;
+  group.addEventListener("click", e=>{
+    const chip = e.target.closest(".chip");
+    if(!chip) return;
+    group.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));
+    chip.classList.add("active");
+    const customInput = group.nextElementSibling && group.nextElementSibling.classList.contains("custom-input")
+      ? group.nextElementSibling : null;
+    if(chip.dataset.value === "__custom__"){
+      if(customInput){ customInput.style.display = "block"; customInput.focus(); }
+      state[key] = (customInput && customInput.value.trim()) || "custom";
+    } else {
+      if(customInput) customInput.style.display = "none";
+      state[key] = chip.dataset.value;
+    }
+    if(key==="genre") populateReveal();
+    generate();
+    renderPreview();
+  });
+});
+
+function populateReveal(){
+  const sel = document.getElementById("revealType");
+  const customOpt = sel.querySelector('option[value="__custom__"]');
+  [...sel.options].forEach(o=>{ if(o.value !== "__custom__") sel.removeChild(o); });
+  const opts = revealOptions[state.genre] || ["Describe your own reveal action using the Custom field below"];
+  opts.forEach(opt=>{
+    const o = document.createElement("option");
+    o.value = opt; o.textContent = opt;
+    if(customOpt) sel.insertBefore(o, customOpt);
+    else sel.appendChild(o);
+  });
+}
+
+["brandName","logoDesc","brandColor","reference"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", generate);
+});
+["revealType","lighting","background","duration","aspect","loop"].forEach(id=>{
+  document.getElementById(id).addEventListener("change", ()=>{generate(); if(id==="duration") renderPreview();});
+});
+
+function resolveSelect(id){
+  const sel = document.getElementById(id);
+  if(sel.value === "__custom__"){
+    const wrap = sel.nextElementSibling;
+    const input = wrap ? wrap.querySelector("input") : null;
+    return (input && input.value.trim()) || sel.options[0].textContent;
+  }
+  return sel.value;
+}
+
+function generate(){
+  const brand = document.getElementById("brandName").value.trim() || "the brand";
+  const notes = document.getElementById("logoDesc").value.trim();
+  const color = document.getElementById("brandColor").value.trim();
+  const reveal = resolveSelect("revealType") || revealOptions[state.genre][0];
+  const lighting = resolveSelect("lighting");
+  const background = resolveSelect("background");
+  const durationRaw = resolveSelect("duration");
+  const duration = durationRaw;
+  const durationNum = parseFloat(durationRaw) || 3;
+  const aspect = resolveSelect("aspect");
+  const loop = resolveSelect("loop");
+  const reference = document.getElementById("reference").value.trim();
+
+  let out = "";
+
+  if(state.mode==="have"){
+    out += `Animate the attached logo for ${brand}. This is the exact source image — do not redraw, redesign, restyle, or recolor it.\n\n`;
+    out += `Color lock: render the logo's colors pixel-identical to the reference file${color ? " (primary color " + color + ")" : ""}. Do not apply color grading, filters, tinting, white balance shifts, or lighting-based recoloring to the logo itself. Any glow, neon, or light effects should sit around or behind the logo, never overlay or tint its fill.\n\n`;
+    if(notes) out += `Notes: ${notes}.\n\n`;
+    out += `Render style: ${state.dimension.toLowerCase()}.\n\n`;
+  } else {
+    out += `${state.logoType} for ${brand}: ${notes || "[describe the logo's shape, symbol, and colors here]"}${color ? ", primary color " + color : ""}.\n\n`;
+    out += `Style: ${state.styleEra.toLowerCase()}, rendered in ${state.dimension.toLowerCase()}.\n\n`;
+  }
+
+  const genreKnown = revealOptions.hasOwnProperty(state.genre);
+  const genreText = genreKnown ? genreLabels[state.genre] + " reveal" : state.genre;
+  out += `Motion: ${genreText}. ${reveal}. Motion eases with a ${state.easing.toLowerCase()} feel.\n\n`;
+  out += `Lighting: ${lighting.toLowerCase()}. Background: ${background.toLowerCase()}.\n\n`;
+  out += `Camera: ${state.camera.toLowerCase()}.\n\n`;
+  out += `Duration: ${duration}${/^\d+(\.\d+)?$/.test(String(duration)) ? " seconds" : ""}, ${aspect.toLowerCase()} aspect ratio. ${loop}.`;
+  if(reference) out += `\n\nReference style: ${reference}.`;
+
+  document.getElementById("promptOut").textContent = out;
+  renderShotlist(durationNum, reveal);
+}
+
+function renderShotlist(duration, reveal){
+  const list = document.getElementById("shotlist");
+  const t1 = (duration*0.15).toFixed(1);
+  const t2 = (duration*0.7).toFixed(1);
+  const shots = [
+    {t:`0–${t1}s`, d:"Empty frame holds, setting up background and lighting before any motion begins."},
+    {t:`${t1}–${t2}s`, d:reveal + "."},
+    {t:`${t2}–${duration}s`, d:"Mark settles into final position and holds, per the chosen end behavior."}
+  ];
+  list.innerHTML = shots.map(s=>`<div class="shot"><span class="t">${s.t}</span><span class="d">${s.d}</span></div>`).join("");
+}
+
+function renderPreview(){
+  const el = document.getElementById("previewMark");
+  const rawDur = typeof resolveSelect === "function" ? resolveSelect("duration") : document.getElementById("duration").value;
+  const dur = parseFloat(rawDur) || 3;
+  const easeMap = {
+    "Smooth ease-out":"cubic-bezier(0.16,1,0.3,1)",
+    "Elastic / bouncy":"cubic-bezier(0.68,-0.55,0.27,1.55)",
+    "Linear / mechanical":"linear",
+    "Snappy overshoot-and-settle":"cubic-bezier(0.34,1.56,0.64,1)",
+    "Slow cinematic":"cubic-bezier(0.25,0.1,0.25,1)"
+  };
+  const ease = easeMap[state.easing] || "ease-out";
+  const speed = Math.max(0.9, Math.min(dur, 2.5));
+
+  let svg = "";
+  if(state.genre==="line"){
+    svg = `<svg viewBox="0 0 100 100" width="60" height="60">
+      <polygon points="50,15 85,35 85,70 50,90 15,70 15,35" fill="none" stroke="${getComputedStyle(document.documentElement).getPropertyValue('--pulse')}" stroke-width="4" stroke-dasharray="240" stroke-dashoffset="240">
+        <animate attributeName="stroke-dashoffset" from="240" to="0" dur="${speed}s" fill="freeze" calcMode="spline" keySplines="0.16 1 0.3 1" repeatCount="indefinite"/>
+      </polygon></svg>`;
+  } else if(state.genre==="particle"){
+    svg = `<svg viewBox="0 0 100 100" width="60" height="60">`;
+    for(let i=0;i<6;i++){
+      const angle = (i/6)*2*Math.PI;
+      const x0 = 50+Math.cos(angle)*45, y0 = 50+Math.sin(angle)*45;
+      svg += `<circle r="4" fill="${'#34E2C0'}"><animate attributeName="cx" values="${x0};50" dur="${speed}s" repeatCount="indefinite"/><animate attributeName="cy" values="${y0};50" dur="${speed}s" repeatCount="indefinite"/></circle>`;
+    }
+    svg += `</svg>`;
+  } else if(state.genre==="mecha"){
+    svg = `<svg viewBox="0 0 100 100" width="60" height="60">
+      <rect x="20" y="35" width="25" height="25" fill="#7C5CFF"><animateTransform attributeName="transform" type="translate" values="-40,0;0,0" dur="${speed}s" repeatCount="indefinite"/></rect>
+      <rect x="55" y="35" width="25" height="25" fill="#34E2C0"><animateTransform attributeName="transform" type="translate" values="40,0;0,0" dur="${speed}s" repeatCount="indefinite"/></rect>
+      </svg>`;
+  } else if(state.genre==="glitch"){
+    svg = `<svg viewBox="0 0 100 100" width="60" height="60">
+      <circle cx="50" cy="50" r="28" fill="#7C5CFF" opacity="0.8"><animate attributeName="cx" values="30;70;48;52;50" dur="${speed}s" repeatCount="indefinite"/></circle>
+      <circle cx="50" cy="50" r="28" fill="none" stroke="#34E2C0" stroke-width="2"><animate attributeName="cx" values="70;30;52;48;50" dur="${speed}s" repeatCount="indefinite"/></circle>
+      </svg>`;
+  } else if(state.genre==="organic"){
+    svg = `<svg viewBox="0 0 100 100" width="60" height="60">
+      <circle cx="50" cy="50" r="0" fill="#34E2C0"><animate attributeName="r" values="0;30" dur="${speed}s" repeatCount="indefinite" calcMode="spline" keySplines="0.25 0.1 0.25 1"/><animate attributeName="opacity" values="0;1" dur="${speed}s" repeatCount="indefinite"/></circle>
+      </svg>`;
+  } else if(state.genre==="liquid"){
+    svg = `<svg viewBox="0 0 100 100" width="60" height="60">
+      <circle cx="50" cy="50" r="26" fill="#7C5CFF"><animate attributeName="ry" values="4;26" dur="${speed}s" repeatCount="indefinite" calcMode="spline" keySplines="0.16 1 0.3 1"/></circle>
+      </svg>`;
+  } else if(state.genre==="glass"){
+    svg = `<svg viewBox="0 0 100 100" width="60" height="60">
+      <polygon points="50,20 75,50 50,80 25,50" fill="#7C5CFF" opacity="0.85"><animateTransform attributeName="transform" type="rotate" values="180 50 50;0 50 50" dur="${speed}s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;0.85" dur="${speed}s" repeatCount="indefinite"/></polygon>
+      </svg>`;
+  } else if(state.genre==="origami"){
+    svg = `<svg viewBox="0 0 100 100" width="60" height="60">
+      <rect x="30" y="30" width="40" height="40" fill="#34E2C0"><animateTransform attributeName="transform" type="scale" values="1,0.05;1,1" additive="sum" dur="${speed}s" repeatCount="indefinite" calcMode="spline" keySplines="0.16 1 0.3 1"/></rect>
+      </svg>`;
+  } else if(state.genre==="kinetic"){
+    svg = `<svg viewBox="0 0 100 100" width="60" height="60">
+      <text x="50" y="58" font-family="Space Grotesk, sans-serif" font-size="22" fill="#ECEBF0" text-anchor="middle" opacity="0"><animate attributeName="opacity" values="0;1" dur="${speed*0.4}s" begin="0s" repeatCount="indefinite"/>AC</text>
+      </svg>`;
+  } else {
+    svg = `<svg viewBox="0 0 100 100" width="60" height="60">
+      <circle cx="50" cy="50" r="0" fill="#7C5CFF" opacity="0"><animate attributeName="r" values="0;28" dur="${speed}s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1" dur="${speed}s" repeatCount="indefinite"/></circle>
+      </svg>`;
+  }
+  el.innerHTML = svg;
+}
+
+document.getElementById("copyBtn").addEventListener("click", ()=>{
+  const text = document.getElementById("promptOut").textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn = document.getElementById("copyBtn");
+    const original = btn.textContent;
+    btn.textContent = "Copied";
+    setTimeout(()=>{btn.textContent = original;}, 1400);
+  });
+});
+
+document.getElementById("randomizeBtn").addEventListener("click", ()=>{
+  const groups = document.querySelectorAll(".chip-group");
+  groups.forEach(group=>{
+    const chips = [...group.querySelectorAll(".chip")].filter(c=>c.dataset.value !== "__custom__");
+    const pick = chips[Math.floor(Math.random()*chips.length)];
+    group.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));
+    pick.classList.add("active");
+    state[group.dataset.group] = pick.dataset.value;
+    const customInput = group.nextElementSibling && group.nextElementSibling.classList.contains("custom-input")
+      ? group.nextElementSibling : null;
+    if(customInput) customInput.style.display = "none";
+  });
+  populateReveal();
+  const revealSel = document.getElementById("revealType");
+  const revealOpts = [...revealSel.options].filter(o=>o.value !== "__custom__");
+  revealSel.value = revealOpts[Math.floor(Math.random()*revealOpts.length)].value;
+  const lighting = document.getElementById("lighting");
+  const lightOpts = [...lighting.options].filter(o=>o.value !== "__custom__");
+  lighting.value = lightOpts[Math.floor(Math.random()*lightOpts.length)].value;
+  document.querySelectorAll("select ~ .custom-input").forEach(w=>w.style.display = "none");
+  generate();
+  renderPreview();
+});
+
+applyMode();
+populateReveal();
+setupCustomChips();
+setupCustomSelects();
+generate();
+renderPreview();
+</script>
+</body>
+</html>
